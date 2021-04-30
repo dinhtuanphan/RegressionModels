@@ -1,0 +1,128 @@
+---
+title: "Motor Trend Data Analysis"
+author: "Dinh Tuan Phan"
+date: "4/30/2021"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(warning = FALSE)
+knitr::opts_chunk$set(message = FALSE)
+```
+
+## Synopsis
+
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+1. “Is an automatic or manual transmission better for MPG”
+2. "Quantify the MPG difference between automatic and manual transmissions"  
+
+## Install packages
+
+```{r}
+library(ggplot2)
+```
+
+## Load data
+
+```{r}
+data(mtcars)
+head(mtcars)
+```
+
+
+Summary on data to understand the predictors and outcome
+
+```{r}
+summary(mtcars)
+```
+
+
+## First visualise the data
+
+Run the pair plots to have a first glance on the correlation between input.
+
+```{r}
+pairs(mtcars, panel=panel.smooth, main="Relationship between predictors")
+
+```
+
+
+## Run statistical inference
+
+We first run the correlation between the MPG and other predictors.
+
+```{r}
+cor(mtcars$mpg,mtcars[,-1])
+
+```
+
+We can see that the transmission type has a positive correlation (0.5998), so that answers the first question: “Is an automatic or manual transmission better for MPG”. The manual is better than automatic in term of mpg. We can check by plotting the am vs mpg.
+
+
+## Plots
+
+```{r}
+ggplot(mtcars, aes(y=mpg, x=factor(am, labels = c("automatic", "manual")), fill=factor(am)))+
+        geom_boxplot(colour="black", size=1)+
+        xlab("Transmission Type") + ylab("Miles per Gallon (MPG)") + 
+        scale_fill_discrete(name = "Transmission Type", labels = c("automatic", "manual"))
+```
+
+
+## Run regression model
+
+We run linear model between all predictors vs outcome (mpg) and we examine parameters in the model.
+
+```{r}
+fullModel <-lm(mpg~.,mtcars)
+summary(fullModel)
+```
+
+From the results, we can see that only wt is significant to the model because p-value < 0.1 (theoretically, p-values should be smaller than 0.05). We run the model again with only 1 predictor wt.
+
+
+```{r}
+lm1 <-lm(mpg~wt,mtcars)
+summary(lm1)
+```
+
+This is a good model with very low p-value (0.001). It makes sense because the car efficiency (i.e., measured in mpg) heavily depending on its weight. We can further visualize by plotting.
+
+```{r}
+mtcars$tran=ifelse(mtcars$am == 0,"automatic","manual")
+ggplot(mtcars, aes(x=wt, y=mpg, group=tran, color=tran, height=3, width=3)) + geom_point() +  
+scale_colour_discrete(name = "Transmission Type",labels=c("Automatic", "Manual")) + 
+xlab("Weight") + ggtitle("Weight vs MPG by Transmission Type")
+```
+
+
+
+Next we can try to run the model with one more predictor (i.e., the Transmission am) because predictor am has the lowest p-value among the remaining predictors.
+
+```{r}
+lm2 <-lm(mpg~wt+am,mtcars)
+summary(lm2)
+```
+
+The predictor wt is significant (p-value less than 0.001) but am is not significant (p-value is to high 0.988) in the model.
+
+
+Next, we might want to run a linear model with only predictor am to exam it independently.
+
+```{r}
+lm3 <-lm(mpg~am,mtcars)
+summary(lm3)
+```
+
+This model seems to answer the question. The car efficiency (i.e., measured in mpg) depends on the transmission type.
+
+The answer for the second question: "Quantify the MPG difference between automatic and manual transmissions" is: the cars with manual transmission is 7.245 mpg better than the automatic cars.
+
+
+
+
+
