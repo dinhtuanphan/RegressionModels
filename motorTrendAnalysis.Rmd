@@ -123,6 +123,18 @@ This model seems to answer the question. The car efficiency (i.e., measured in m
 The answer for the second question: "Quantify the MPG difference between automatic and manual transmissions" is: the cars with manual transmission is 7.245 mpg better than the automatic cars.
 
 
+## Best model
+
+```{r}
+bestmodel = step(lm(data = mtcars, mpg ~ .), trace=0)
+summary(bestmodel)
+```
+Plot the residuals
+
+```{r}
+par(mfrow = c(2,2))
+plot(bestmodel)
+```
 
 
 
